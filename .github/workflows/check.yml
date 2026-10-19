@@ -1,0 +1,30 @@
+name: check
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+    - cron: '17 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      test:
+        description: 'Send a test alert'
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: check
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: evaluate
+        env:
+          HB: ${{ vars.HEARTBEAT_AT }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT }}
+          TEST: ${{ inputs.test }}
+          SCHED: ${{ github.event.schedule }}
+        run: bash check.sh
